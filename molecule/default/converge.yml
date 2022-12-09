@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: Include traefik.
+      ansible.builtin.include_role:
+        name: alecunsolo.traefik
