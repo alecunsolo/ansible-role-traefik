@@ -27,8 +27,8 @@
     group: '{{ traefik_group }}'
     mode: '0750'
 
-- name: Copy the configuration file.
-  ansible.builtin.copy:
+- name: Populate the configuration file.
+  ansible.builtin.template:
     src: '{{ traefik_config_file }}'
     dest: /etc/traefik/traefik.yml
     owner: root
