@@ -45,4 +45,4 @@
     owner: root
     group: root
     mode: '0755'
-  when: traefik_installed_version is not defined or traefik_installed_version != traefik_version
+  when: traefik_installed_version is not defined or 'v' + traefik_installed_version != traefik_version
