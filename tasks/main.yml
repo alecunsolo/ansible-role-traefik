@@ -1,2 +1,3 @@
 ---
-# tasks file for traefik
+- name: Install traefik.
+  ansible.builtin.include_tasks: install.yml

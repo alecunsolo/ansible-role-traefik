@@ -1,0 +1,48 @@
+---
+# Get latest version
+- name: Get the latest version
+  when: (traefik_version is not defined) or (traefik_version == 'latest')
+  run_once: true
+  block:
+  - name: Determine latest GitHub release (local).
+    delegate_to: localhost
+    become: false
+    ansible.builtin.uri:
+      url: https://api.github.com/repos/{{ traefik_repo }}/releases/latest
+      body_format: json
+    register: _github_release
+    until: _github_release.status == 200
+    retries: 5
+
+  - name: Set traefik_version.
+    ansible.builtin.set_fact:
+      traefik_version: "{{ _github_release.json.tag_name }}"
+
+- name: Test if traefik is already installed.
+  ansible.builtin.stat:
+    path: /usr/local/bin/traefik
+  register: tf
+
+- name: Get installed version.
+  ansible.builtin.command:
+    cmd: /usr/local/bin/traefik version
+  changed_when: false
+  register: tf_ver
+  when: tf.stat.executable is defined and tf.stat.executable
+
+- name: Parse version string.
+  ansible.builtin.set_fact:
+    traefik_installed_version: "{{ tf_ver.stdout | regex_search('Version:\\s+(\\S+)', '\\1') | first }}"  # Regex \s -> space \S -> not space
+  when: tf_ver.rc is defined and tf_ver.rc == 0
+
+- name: Download traefik.
+  ansible.builtin.unarchive:
+    src: https://github.com/{{ traefik_repo }}/releases/download/{{ traefik_version }}/traefik_{{ traefik_version }}_linux_{{ go_arch }}.tar.gz
+    dest: /usr/local/bin
+    include:
+    - traefik
+    remote_src: true
+    owner: root
+    group: root
+    mode: '0755'
+  when: traefik_installed_version is not defined or traefik_installed_version != traefik_version
