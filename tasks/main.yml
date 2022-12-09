@@ -1,3 +1,52 @@
 ---
 - name: Install traefik.
   ansible.builtin.include_tasks: install.yml
+
+- name: Ensure that the traefik group exists
+  ansible.builtin.group:
+    name: '{{ traefik_group }}'
+    state: present
+    system: true
+
+- name: Ensure that the traefik user exists
+  ansible.builtin.user:
+    name: '{{ traefik_user }}'
+    state: present
+    group: '{{ traefik_group }}'
+    password_lock: true
+    home: /not/exists
+    create_home: false
+    system: true
+    shell: /sbin/nologin
+
+- name: Ensure that the config directory exists.
+  ansible.builtin.file:
+    path: /etc/traefik
+    state: directory
+    owner: root
+    group: '{{ traefik_group }}'
+    mode: '0750'
+
+- name: Copy the configuration file.
+  ansible.builtin.copy:
+    src: '{{ traefik_config_file }}'
+    dest: /etc/traefik/traefik.yml
+    owner: root
+    group: '{{ traefik_group }}'
+    mode: '0640'
+  notify: Restart traefik
+
+- name: Configure traefik service.
+  ansible.builtin.template:
+    src: traefik.service.j2
+    dest: /etc/systemd/system/traefik.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Daemon reload
+
+- name: Ensure traefik service is started and enabled
+  ansible.builtin.service:
+    name: traefik
+    state: started
+    enabled: true

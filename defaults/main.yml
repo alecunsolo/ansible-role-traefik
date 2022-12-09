@@ -1,2 +1,5 @@
 ---
 traefik_repo: traefik/traefik
+traefik_user: traefik
+traefik_group: traefik
+traefik_config_file: traefik-default.yml

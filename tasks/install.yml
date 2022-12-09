@@ -46,3 +46,4 @@
     group: root
     mode: '0755'
   when: traefik_installed_version is not defined or 'v' + traefik_installed_version != traefik_version
+  notify: Restart traefik

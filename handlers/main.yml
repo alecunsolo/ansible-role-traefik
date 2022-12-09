@@ -1,2 +1,10 @@
 ---
 # handlers file for traefik
+- name: Daemon reload
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Restart traefik
+  ansible.builtin.service:
+    name: traefik
+    state: restarted
